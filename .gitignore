@@ -1,0 +1,22 @@
+# Build output
+bin/
+obj/
+
+# Local tools
+.tools/
+
+# Local editor files
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Logs and temporary files
+*.log
+*.tmp
+*.cache
+
+# Game assemblies should not be committed
+OxygenNotIncluded_Data/
+Managed/
+*.pdb

@@ -1,0 +1,55 @@
+superMicrobeMusher
+
+English
+
+superMicrobeMusher expands the recipe list of the vanilla Microbe Musher.
+
+After enabling this mod, the Microbe Musher can produce many more valid pickupable items from the loaded game content, including common materials, food, seeds, medicine, industrial products, and other safe item prefabs.
+
+Added recipes use a tiny amount of water as input.
+
+Current output rules:
+
+Mass-based products: 1000 kg
+Unit-based products, food, seeds, and medicine: 1 item
+
+Compatibility and implementation notes:
+
+This version was rebuilt with compatibility and future updates in mind.
+
+Instead of hardcoding a fixed item list, the mod scans the loaded prefab list at recipe post-processing time. This allows it to work better with different DLC combinations and makes it more likely to stay compatible after game updates.
+
+The mod only registers recipes for prefabs that look safe to instantiate through the normal fabricator system. It requires a valid PrimaryElement and Pickupable component, and skips buildings, creatures, duplicants, hidden content, deprecated content, and internal objects.
+
+The mod does not replace the Microbe Musher building, does not modify the original recipes, does not change building cost, power usage, animation, automation, storage behavior, or world generation.
+
+For visibility in a new colony, added recipes include a non-consumed 0 kg dirt requirement. The actual material cost is still the tiny water input.
+
+Special objects that do not have a safe pickupable prefab are skipped automatically instead of being forced into the list.
+
+中文
+
+superMicrobeMusher 会扩展原版食物压制器的配方列表。
+
+启用这个模组后，食物压制器可以生产更多来自当前游戏内容的有效可拾取物品，包括常见材料、食物、种子、药品、工业产物以及其他安全的物品 prefab。
+
+新增配方只需要极少量的水作为输入。
+
+当前产出规则：
+
+按质量计算的产物：1000 千克
+按数量计算的产物、食物、种子、药品：1 个
+
+兼容性和实现说明：
+
+这个版本是为了更好的兼容性和后续更新重新实现的。
+
+模组不会硬编码固定物品列表，而是在配方后处理阶段扫描当前已经加载的 prefab 列表。这样可以更好地适配不同 DLC 组合，也更容易在游戏后续更新后继续工作。
+
+模组只会为看起来可以通过普通制造系统安全实例化的 prefab 注册配方。它要求目标物品具有有效的 PrimaryElement 和 Pickupable 组件，并会跳过建筑、生物、复制人、隐藏内容、废弃内容和内部对象。
+
+模组不会替换食物压制器建筑，不会修改原版配方，不会修改建筑成本、电力消耗、动画、自动化、储物行为或世界生成。
+
+为了让新增配方在新殖民地中更容易显示，新增配方包含一个不消耗的 0 千克泥土需求。实际材料成本仍然只是极少量的水。
+
+没有安全可拾取 prefab 的特殊对象会被自动跳过，不会被强行加入列表。
