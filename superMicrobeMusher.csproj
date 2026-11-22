@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net48</TargetFramework>
     <AssemblyName>superMicrobeMusher</AssemblyName>
     <RootNamespace>superMicrobeMusher</RootNamespace>
     <OutputType>Library</OutputType>

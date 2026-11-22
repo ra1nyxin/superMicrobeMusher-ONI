@@ -18,6 +18,8 @@ The mod patches `ComplexRecipeManager.PostProcess` and registers additional reci
 
 It does not replace the Microbe Musher building, does not remove vanilla recipes, and does not force unsafe prefabs into recipes.
 
+The mod skips and logs recipes whose final game-generated IDs conflict with recipes already registered or pending when its post-processing prefix runs. Mods that add conflicting recipes later can still conflict.
+
 ## Build
 
 Run:
@@ -29,8 +31,10 @@ Run:
 The build script compiles and installs the dev mod to:
 
 ```text
-C:\Users\Administrator\Documents\Klei\OxygenNotIncluded\mods\Dev\superMicrobeMusher
+%USERPROFILE%\Documents\Klei\OxygenNotIncluded\mods\Dev\superMicrobeMusher
 ```
+
+The project targets .NET Framework 4.8 to match the current game assemblies. Update the managed assembly path in the project and build script if the game is installed elsewhere.
 
 ## Workshop Package
 

@@ -16,6 +16,7 @@ namespace superMicrobeMusher
     }
 
     [HarmonyPatch(typeof(ComplexRecipeManager), "PostProcess")]
+    [HarmonyPriority(Priority.Last)]
     internal static class ComplexRecipeManagerPostProcessPatch
     {
         private static void Prefix()
@@ -64,18 +65,8 @@ namespace superMicrobeMusher
             "GravitasCreatureManipulator"
         };
 
-        private static bool registered;
-        private static readonly HashSet<string> RegisteredRecipeIds = new HashSet<string>();
-
         public static void RegisterAllSafeRecipes()
         {
-            if (registered)
-            {
-                return;
-            }
-
-            registered = true;
-
             try
             {
                 if (Assets.Prefabs == null)
@@ -90,6 +81,8 @@ namespace superMicrobeMusher
 
                 foreach (KPrefabID prefabId in Assets.Prefabs)
                 {
+                    try
+                    {
                     if (prefabId == null || prefabId.gameObject == null)
                     {
                         skippedCount++;
@@ -124,6 +117,12 @@ namespace superMicrobeMusher
                     else
                     {
                         skippedCount++;
+                    }
+                    }
+                    catch (Exception ex)
+                    {
+                        skippedCount++;
+                        Debug.LogWarning("[superMicrobeMusher] Failed to inspect a prefab: " + ex);
                     }
                 }
 
@@ -229,6 +228,8 @@ namespace superMicrobeMusher
 
         private static bool RegisterRecipe(Tag resultTag, float outputAmount, int sortOrder)
         {
+            ComplexRecipe recipe = null;
+            ComplexRecipeManager manager = ComplexRecipeManager.Get();
             try
             {
                 ComplexRecipe.RecipeElement[] inputs =
@@ -243,30 +244,68 @@ namespace superMicrobeMusher
                 };
 
                 string recipeId = FabricatorId + "_superMicrobeMusher_" + resultTag.Name;
-                if (RegisteredRecipeIds.Contains(recipeId) || ComplexRecipeManager.Get().GetRecipe(recipeId) != null)
+                string finalId = ComplexRecipeManager.MakeRecipeID(FabricatorId, inputs, outputs, null);
+                if (manager.GetRecipe(recipeId) != null)
+                    return false;
+                if (manager.GetRecipe(finalId) != null || HasPendingConflict(manager, finalId))
                 {
+                    Debug.LogWarning("[superMicrobeMusher] Skipped conflicting recipe for " + resultTag + " (" + finalId + ").");
                     return false;
                 }
 
-                ComplexRecipe recipe = new ComplexRecipe(recipeId, inputs, outputs)
-                {
-                    time = WorkTimeSeconds,
-                    description = "Use a tiny amount of water to fabricate " + resultTag.ProperName() + ".",
-                    nameDisplay = ComplexRecipe.RecipeNameDisplay.Result,
-                    fabricators = new List<Tag> { FabricatorId },
-                    sortOrder = sortOrder
-                };
+                recipe = new ComplexRecipe(recipeId, inputs, outputs);
+                recipe.time = WorkTimeSeconds;
+                recipe.description = "Use a tiny amount of water to fabricate " + resultTag.ProperName() + ".";
+                recipe.nameDisplay = ComplexRecipe.RecipeNameDisplay.Result;
+                recipe.fabricators = new List<Tag> { FabricatorId };
+                recipe.sortOrder = sortOrder;
 
                 recipe.recipeCategoryID = ComplexRecipeManager.MakeRecipeCategoryID(FabricatorId, "superMicrobeMusher", resultTag.Name);
                 recipe.SetFabricationAnim("mushbar_kanim");
-                RegisteredRecipeIds.Add(recipeId);
                 return true;
             }
             catch (Exception ex)
             {
+                if (recipe != null)
+                {
+                    manager.preProcessRecipes.Remove(recipe);
+                    if (recipe.FabricationVisualizer != null)
+                    {
+                        UnityEngine.Object.Destroy(recipe.FabricationVisualizer);
+                    }
+                }
                 Debug.LogWarning("[superMicrobeMusher] Skipped recipe for " + resultTag + ": " + ex.Message);
                 return false;
             }
+        }
+
+        private static bool HasPendingConflict(ComplexRecipeManager manager, string finalId)
+        {
+            foreach (ComplexRecipe pending in manager.preProcessRecipes)
+            {
+                if (pending == null || pending.id == null || pending.ingredients == null || pending.results == null || pending.results.Length == 0)
+                    continue;
+                int separator = pending.id.IndexOf('_');
+                if (separator < 0 || pending.id.Substring(0, separator) != FabricatorId || pending.ingredients.Length != 2)
+                    continue;
+                if (!ContainsMaterial(pending.ingredients[0], WaterTag) || !ContainsMaterial(pending.ingredients[1], VisibilityTag))
+                    continue;
+                ComplexRecipe.RecipeElement[] candidateInputs = {
+                    new ComplexRecipe.RecipeElement(WaterTag, WaterKg),
+                    new ComplexRecipe.RecipeElement(VisibilityTag, 0f)
+                };
+                if (ComplexRecipeManager.MakeRecipeID(FabricatorId, candidateInputs, pending.results, pending.results[0].facadeID) == finalId)
+                    return true;
+            }
+            return false;
+        }
+
+        private static bool ContainsMaterial(ComplexRecipe.RecipeElement ingredient, Tag tag)
+        {
+            if (ingredient == null || ingredient.possibleMaterials == null) return false;
+            foreach (Tag material in ingredient.possibleMaterials)
+                if (material == tag) return true;
+            return false;
         }
     }
 }
